@@ -1,0 +1,16 @@
+[
+    {
+        "PatientName": "tolosa",
+        "PatientAge": "34",
+        "PatientSex": "male",
+        "PatientCase": "head",
+        "PatientId": "4545"
+    },
+    {
+        "PatientName": "yyyyyy",
+        "PatientAge": "78",
+        "PatientSex": "male",
+        "PatientCase": "hhhhhhhh",
+        "PatientId": "7878"
+    }
+]
