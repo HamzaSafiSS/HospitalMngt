@@ -12,9 +12,9 @@ def ListPatient():
     print("----List Of Patients-------")
     for idx, row in enumerate(rows,start=1):
         print(f"{idx}. ID: {row[0]}, Name: {row[1]}, Age: {row[2]}, Sex: {row[3]}, Case{row[4]}")
-    
     cursor.close()
     conn.close()
+
 def AddPatient():
     PatientId = input("Please enter patient ID: ")
     PatientName = input("Please enter Patient Name: ")
@@ -23,7 +23,6 @@ def AddPatient():
     PatientCase = input("please enter patient case: ")
     conn = get_connection()
     cursor = conn.cursor()
-
     query = ("""
  INSERT INTO trypatients (patient_id, patient_name, patient_age, patient_sex, patient_case)
  VALUES(%s,%s,%s,%s,%s)
@@ -38,7 +37,6 @@ def ViewById():
     viewId = input("Please enter ID of the patient: ")
     conn = get_connection()
     cursor = conn.cursor()
-    
     cursor.execute("SELECT * FROM trypatients WHERE patient_id=%s",(viewId,))
     rows = cursor.fetchall()
     for idx,row in enumerate(rows,start=1):
@@ -48,15 +46,41 @@ def SearchByName():
     patientName = input("Please enter the name of the patient: ")
     conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute("SELECT * FROM trypatients WHERE patient_name = %s",(patientName,))
     rows = cursor.fetchall()
     for idx,row in enumerate(rows,start=1):
         print(f"ID: {row[0]}, Name: {row[1]}, Age: {row[2]}, Sex: {row[3]}, Case: {row[4]}")
+
 def UpdatePatient():
-    print("Will completed soon")
+    patientID = input("Please enter the ID of the patient you want to edit: ")
+    PatientId = input("Please enter the new patient ID: ")
+    PatientName = input("Please enter the new Patient Name: ")
+    PatientAge = input("please enter the new patient Age: ")
+    PatientSex = input("Please enter the new patient sex: ")
+    PatientCase = input("please enter the new patient case: ")
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = ("""
+            UPDATE trypatients
+            SET patient_id = %s, patient_name=%s, patient_age=%s, patient_sex=%s,patient_case=%s
+            WHERE patient_id = %s
+""") 
+    cursor.execute(query,(PatientId,PatientName,PatientAge,PatientSex,PatientCase,patientID))
+    conn.commit()
+    print("Patient Information Successfully Updated")
+    cursor.close()
+    conn.close()
+
 def DeletePatient():
-    print("will completed soon")
+    patientID = input("Please enter the ID of the Patient you want to Delete: ")
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM trypatients WHERE patient_id=%s",(patientID,))
+    conn.commit()
+    print("Patient Successfully Deleted.")
+    cursor.close()
+    conn.close()
+
 def Services():
     while True:
         print('\n--- Patient Management ---')
@@ -67,9 +91,7 @@ def Services():
         print("5. Update patient")
         print("6. Delete patient")
         print("7. Exit")
-
         choice = int(input("Please enter the number of the service you need: "))
-
         if choice == 1:
             ListPatient()
         elif choice == 2:
@@ -84,6 +106,5 @@ def Services():
             DeletePatient()
         elif choice == 7:
             sys.exit()
-
 
 Services()
