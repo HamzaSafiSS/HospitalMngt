@@ -5,18 +5,25 @@ from functions import ViewById
 from functions import SearchByName
 from functions import UpdatePatient
 from functions import DeletePatient
+from functions import ListDoctors
+from functions import AddDoctor
+from functions import ViewDoctorById
+from functions import SearchDoctorByName
+from functions import UpdateDoctor
+from functions import DeleteDoctor
 import sys
 
-def Services():
+def ManagePatients():
     while True:
         print('\n--- Patient Management ---')
         print("1. List All Patients")
-        print("2. Add patient")
-        print("3. View by patient ID")
-        print("4. Search patients by name")
-        print("5. Update patient")
-        print("6. Delete patient")
-        print("7. Exit")
+        print("2. Add Patient")
+        print("3. View By Patient ID")
+        print("4. Search Patients By Name")
+        print("5. Update Patient")
+        print("6. Delete Patient")
+        print("7. Back")
+        print("8. Exit")
         choice = int(input("Please enter the number of the service you need: "))
         if choice == 1:
             ListPatient()
@@ -31,6 +38,50 @@ def Services():
         elif choice == 6:
             DeletePatient()
         elif choice == 7:
+            GetServices()
+        elif choice == 8:
             sys.exit()
 
-Services()
+
+def ManageDoctors():
+    while True:
+        print('\n--- Doctors Management ---')
+        print("1. List All Doctors")
+        print("2. Add Doctor")
+        print("3. View By Doctor ID")
+        print("4. Search Doctor By Name")
+        print("5. Update Doctor")
+        print("6. Delete Doctor")
+        print("7. Back")
+        print("8. Exit")
+        choice = int(input("Please enter the number of the service you need: "))
+        if choice == 1:
+            ListDoctors()
+        elif choice == 2:
+            AddDoctor()
+        elif choice == 3:
+            ViewDoctorById()
+        elif choice == 4:
+            SearchDoctorByName()
+        elif choice == 5:
+            UpdateDoctor()
+        elif choice == 6:
+            DeleteDoctor()
+        elif choice == 7:
+            GetServices()
+        elif choice == 8:
+            sys.exit()
+
+
+def GetServices():
+    while True:
+        print('\n -----Select Services You Want-----')
+        print('1. Patient Management Services')
+        print('2. Doctors Management Services')
+        choice = int(input("Please Enter Service Number You Want: "))
+
+        if choice == 1:
+            ManagePatients()
+        elif choice == 2:
+            ManageDoctors()
+GetServices()
