@@ -78,8 +78,8 @@ def GetServices():
         print('\n -----Select Services You Want-----')
         print('1. Patient Management Services')
         print('2. Doctors Management Services')
+        
         choice = int(input("Please Enter Service Number You Want: "))
-
         if choice == 1:
             ManagePatients()
         elif choice == 2:
