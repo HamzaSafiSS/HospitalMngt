@@ -76,7 +76,7 @@ def ManageDoctors():
 def GetServices():
     while True:
         print('\n -----Select Services You Want-----')
-        print('1. Patient Management Services')
+        print('1. Patients Management Services')
         print('2. Doctors Management Services')
         
         choice = int(input("Please Enter Service Number You Want: "))

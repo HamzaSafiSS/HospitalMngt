@@ -1,3 +1,4 @@
+import re
 from db import get_connection
 def ListPatient():
     conn = get_connection()
@@ -5,7 +6,7 @@ def ListPatient():
     cursor.execute("SELECT * FROM patientsdata") 
     rows = cursor.fetchall()
     if not rows:
-        print("The patient with the provided ID not exists in the system")
+        print("Their are no Patients are added in the system Yet.")
         return 
     print("----List Of Patients-------")
     for idx, row in enumerate(rows,start=1):
@@ -14,12 +15,25 @@ def ListPatient():
     conn.close()
 
 def AddPatient():
-    PatientId = input("Please enter patient ID: ")
+
+    PatientId = input("Please enter patient ID Number: ")
     PatientName = input("Please enter Patient Name: ")
-    PatientAge = input("please enter patient Age: ")
-    Patientgender = input("Please enter patient gender: ")
+    while not PatientName.isalpha():
+        PatientName = input("Please enter Valid Patient Name: ")
+
+    PatientAge = input("please enter patient Age: ") 
+    while not PatientAge.isdigit() or int(PatientAge) > 300:
+        PatientAge = input("please enter Valid patient Age:")
+
+    Patientgender = input("Please enter patient gender: ").lower()
+    while Patientgender != "male" and Patientgender != "female":
+        Patientgender = input("Please enter valid patient gender: ").lower()
+
     PatientCase = input("please enter patient case: ")
     PatientPhone = input("please enter patient Phone Number: ")
+    pattern = r"^(09\d{8}|\+2519\d{8})$"
+    while not re.match(pattern, PatientPhone):
+        PatientPhone = input("Invalid phone. Enter 09XXXXXXXX or +2519XXXXXXXX: ")
     PatientAddress = input("please enter patient Address: ")
     conn = get_connection()
     cursor = conn.cursor()
@@ -61,13 +75,25 @@ def SearchByName():
 def UpdatePatient():
     patientID = input("Please enter the ID of the patient you want to edit: ")
     
-    PatientId = input("Please enter the new patient ID: ")
-    PatientName = input("Please enter the new Patient Name: ")
-    PatientAge = input("please enter the new patient Age: ")
-    Patientgender = input("Please enter the new patient gender: ")
-    PatientCase = input("please enter the new patient case: ")
-    patientPhone = input("Please Enter the new patient Phone Number: ")
-    patientAddress = input("PLease Enter the new patient Address: ")
+    PatientId = input("Please enter the New patient ID Number: ")
+    PatientName = input("Please enter  the New Patient Name: ")
+    while not PatientName.isalpha():
+        PatientName = input("Please enter Valid Patient Name: ")
+
+    PatientAge = input("please enter the New patient Age: ") 
+    while not PatientAge.isdigit() or int(PatientAge) > 300:
+        PatientAge = input("please enter Valid patient Age:")
+
+    Patientgender = input("Please enter  the New patient gender: ").lower()
+    while Patientgender != "male" and Patientgender != "female":
+        Patientgender = input("Please enter valid patient gender: ").lower()
+
+    PatientCase = input("please enter the New patient case: ")
+    PatientPhone = input("please enter the New patient Phone Number: ")
+    pattern = r"^(09\d{8}|\+2519\d{8})$"
+    while not re.match(pattern, PatientPhone):
+        PatientPhone = input("Invalid phone. Enter 09XXXXXXXX or +2519XXXXXXXX: ")
+    PatientAddress = input("please enter the New patient Address: ")
     conn = get_connection()
     cursor = conn.cursor()
     query = ("""
@@ -75,7 +101,7 @@ def UpdatePatient():
             SET patient_id = %s, patient_name=%s, patient_age=%s, patient_gender=%s,patient_case=%s,patient_phone=%s,patient_address=%s
             WHERE patient_id = %s
 """) 
-    cursor.execute(query,(PatientId,PatientName,PatientAge,Patientgender,PatientCase,patientPhone,patientAddress,patientID))
+    cursor.execute(query,(PatientId,PatientName,PatientAge,Patientgender,PatientCase,PatientPhone,PatientAddress,patientID))
     conn.commit()
     print("Patient Information Successfully Updated")
     cursor.close()
@@ -85,6 +111,10 @@ def DeletePatient():
     patientID = input("Please enter the ID of the Patient you want to Delete: ")
     conn = get_connection()
     cursor = conn.cursor()
+    cursor.execute("SELECT * FROM patientsdata WHERE patient_id=%s",(patientID,))
+    patient = cursor.fetchone()
+    if not patient:
+        print(f"Patient with {patientID} ID not Exist.")
     cursor.execute("DELETE FROM patientsdata WHERE patient_id=%s",(patientID,))
     conn.commit()
     print("Patient Successfully Deleted.")
@@ -106,8 +136,14 @@ def AddDoctor():
     print("Please Enter Accurate Doctor Information")
     doctortId = input("Please enter Doctor ID: ")
     doctorName = input("Please enter Doctor Name: ")
+    while not doctorName.isalpha():
+        doctorName = input("Please enter Valid Doctor Name: ")
     doctorAge = input("please enter Doctor Age: ")
+    while not doctorAge.isdigit() or int(doctorAge) > 300:
+        doctorAge = input("please enter Valid Doctor Age:")
     doctorGender = input("Please enter Doctor gender: ")
+    while doctorGender != "male" and doctorGender != "female":
+        doctorGender = input("Please enter valid Doctor gender: ").lower()
     doctorSpeciality = input("please enter Doctor Speciality: ")
 
     conn = get_connection()
@@ -133,7 +169,7 @@ def ViewDoctorById():
     if not rows:
         print("Doctor with the provided ID not exists in the system")
         return
-    print("-----List Of All Doctors-----")
+    print("-----The Doctor's Information-----")
     for idx, row in enumerate(rows,start=1):
         print(f"{idx}. ID: {row[0]}, Name: {row[1]}, Age: {row[2]}, Gender: {row[3]}, Speciality: {row[4]}")
 
@@ -154,10 +190,16 @@ def SearchDoctorByName():
 def UpdateDoctor():
     doctorID = input("Please Enter the Doctor ID you want to Update.")
     newDoctorId = input("Please Enter New Doctor ID: ")
-    newDoctorName = input("Please Enter new Doctor Name: ")
-    newDoctorAge = input("Please Enter new Doctor Age: ")
-    newDoctorGender = input("Please Enter New Doctor Gender: ")
-    newDoctorSpeciality = input("Please Enter New Doctor Speciality: ")
+    newDoctorName = input("Please enter Doctor Name: ")
+    while not doctorName.isalpha():
+        doctorName = input("Please enter Valid Doctor Name: ")
+    newDoctorAge = input("please enter Doctor Age: ")
+    while not doctorAge.isdigit() or int(doctorAge) > 300:
+        doctorAge = input("please enter Valid Doctor Age:")
+    newDoctorGender = input("Please enter Doctor gender: ")
+    while doctorGender != "male" and doctorGender != "female":
+        doctorGender = input("Please enter valid Doctor gender: ").lower()
+    newDoctorSpeciality = input("please enter Doctor Speciality: ")
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -175,6 +217,11 @@ def DeleteDoctor():
     doctorID = input("Please Enter Doctor ID you want to Delete: ")
     conn = get_connection()
     cursor = conn.cursor()
+    cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id=%s",(doctorID,))
+    doctor = cursor.fetchone()
+    if not doctor:
+        print(f"Doctor With {doctorID} ID not Exist.")
+        return
     cursor.execute("DELETE FROM doctorsdata WHERE doctor_id=%s",(doctorID,))
     conn.commit()
     print("Doctor Successfully Deleted.")
