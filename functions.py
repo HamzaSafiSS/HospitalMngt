@@ -227,3 +227,18 @@ def DeleteDoctor():
     print("Doctor Successfully Deleted.")
     conn.close()
     cursor.close()
+
+def ListAppointments():
+    print("List Appointments")
+def BookAppointment():
+    print("Book Appointment")
+def ViewAppointmentByID():
+    print("View Appointment By ID")
+def ViewAppointmentsByPatientID():
+    print("View Appointments By Patient ID")
+def ViewAppointmentsByDoctorID():
+    print("View Appointments By Doctor ID")
+def UpdateAppointment():
+    print("Update Appointment")
+def CancelAppointment():
+    print("Cancel Appointment") 
