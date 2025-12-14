@@ -231,7 +231,25 @@ def DeleteDoctor():
 def ListAppointments():
     print("List Appointments")
 def BookAppointment():
-    print("Book Appointment")
+    patientID = input("Please Enter Patient ID: ")
+    doctorID = input("Please Enter Doctor ID: ")
+    appointmentDate = input("Please Enter Appointment Date 'YYYY-MM-DD': ")
+    appointmentTime = input("Please Enter Appointment Time: ")
+    appointmentStatus = input("Please Enter Appointment Status: ")
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    query = """
+            INSERT INTO appointmentmngt(
+            patient_id,doctor_id,appointment_date,appointment_time,appointment_status
+            )
+            VALUES(%s,%s,%s,%s,%s)
+"""
+    cursor.execute(query,(patientID,doctorID,appointmentDate,appointmentTime,appointmentStatus))
+    conn.commit()
+    print("Appointment Successfully Booked.")
+    conn.close()
+    cursor.close()
 def ViewAppointmentByID():
     print("View Appointment By ID")
 def ViewAppointmentsByPatientID():
