@@ -1,4 +1,6 @@
 import re
+import psycopg2
+from datetime import datetime
 from db import get_connection
 def ListPatient():
     conn = get_connection()
@@ -84,7 +86,7 @@ def UpdatePatient():
     while not PatientAge.isdigit() or int(PatientAge) > 300:
         PatientAge = input("please enter Valid patient Age:")
 
-    Patientgender = input("Please enter  the New patient gender: ").lower()
+    Patientgender = input("Please enter the New patient gender: ").lower()
     while Patientgender != "male" and Patientgender != "female":
         Patientgender = input("Please enter valid patient gender: ").lower()
 
@@ -188,31 +190,38 @@ def SearchDoctorByName():
     conn.close()
     cursor.close()
 def UpdateDoctor():
-    doctorID = input("Please Enter the Doctor ID you want to Update.")
-    newDoctorId = input("Please Enter New Doctor ID: ")
-    newDoctorName = input("Please enter Doctor Name: ")
-    while not doctorName.isalpha():
-        doctorName = input("Please enter Valid Doctor Name: ")
-    newDoctorAge = input("please enter Doctor Age: ")
-    while not doctorAge.isdigit() or int(doctorAge) > 300:
-        doctorAge = input("please enter Valid Doctor Age:")
-    newDoctorGender = input("Please enter Doctor gender: ")
-    while doctorGender != "male" and doctorGender != "female":
-        doctorGender = input("Please enter valid Doctor gender: ").lower()
-    newDoctorSpeciality = input("please enter Doctor Speciality: ")
     conn = get_connection()
     cursor = conn.cursor()
 
+    doctorID = input("Please Enter the Doctor ID you want to Update: ")
+    cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id=%s",(doctorID,))
+    doctor = cursor.fetchone()
+    while not doctor:
+        doctorID = input("Please Enter Valid Doctor ID you want to Update.")
+        cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id=%s",(doctorID,))
+        doctor = cursor.fetchone()
+    newDoctorName = input("Please enter New Doctor Name: ")
+    while not newDoctorName.isalpha():
+        newDoctorName = input("Please enter Valid Doctor Name: ")
+    newDoctorAge = input("please enter Doctor Age: ")
+    while not newDoctorAge.isdigit() or not (20 <= int(newDoctorAge) <= 120):
+        newDoctorAge = input("please enter Valid Doctor Age:")
+    newDoctorGender = input("Please enter Doctor gender: ").lower()
+    while newDoctorGender != "male" and newDoctorGender != "female":
+        newDoctorGender = input("Please enter valid Doctor gender: ").lower()
+    newDoctorSpeciality = input("please enter Doctor Speciality: ")
+
+
     query = ("""
             UPDATE doctorsdata 
-            SET doctor_id=%s,doctor_name=%s,doctor_age=%s,doctor_gender=%s,doctor_speciality=%s
+            SET doctor_name=%s,doctor_age=%s,doctor_gender=%s,doctor_speciality=%s
              WHERE doctor_id=%s
 """)
-    cursor.execute(query,(newDoctorId,newDoctorName,newDoctorAge,newDoctorGender,newDoctorSpeciality,doctorID ))
+    cursor.execute(query,(newDoctorName,newDoctorAge,newDoctorGender,newDoctorSpeciality,doctorID ))
     conn.commit()
     print("Doctor Information Successfully Updated.")
-    conn.close()
     cursor.close()
+    conn.close()
 def DeleteDoctor():
     doctorID = input("Please Enter Doctor ID you want to Delete: ")
     conn = get_connection()
@@ -231,13 +240,37 @@ def DeleteDoctor():
 def ListAppointments():
     print("List Appointments")
 def BookAppointment():
-    patientID = input("Please Enter Patient ID: ")
-    doctorID = input("Please Enter Doctor ID: ")
-    appointmentDate = input("Please Enter Appointment Date 'YYYY-MM-DD': ")
-    appointmentTime = input("Please Enter Appointment Time: ")
-    appointmentStatus = input("Please Enter Appointment Status: ")
     conn = get_connection()
     cursor = conn.cursor()
+    patientID = input("Please Enter Patient ID: ")
+    cursor.execute("SELECT * FROM patientsdata WHERE patient_id=%s",(patientID,))
+    patientid = cursor.fetchone()
+    while not patientid:
+        patientID = input("Please Enter a Valid Patient ID: ") 
+        cursor.execute("SELECT * FROM patientsdata WHERE patient_id=%s",(patientID,))
+        patientid = cursor.fetchone()
+    doctorID = input("Please Enter Doctor ID: ")
+    cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id=%s",(doctorID,))
+    doctorid = cursor.fetchone()
+    while not doctorid:
+        doctorID = input("Please Enter a Valid Doctor ID: ") 
+        cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id=%s",(doctorID,))
+        doctorid = cursor.fetchone()
+    while True:
+        appointmentDate = input("Please Enter Appointment Date 'YYYY-MM-DD': ")
+        try:
+            datetime.strptime(appointmentDate,"%Y-%m-%d")
+            break
+        except ValueError:
+            print("Invalid Date Format Use 'YYYY-MM-DD.' ")
+    while True:
+        appointmentTime = input("Please Enter Appointment Time: ")
+        try:
+            datetime.strptime(appointmentTime,"%H:%M")
+            break
+        except ValueError:
+            print("Invalid Time Format Use 'HH:MM'")
+    appointmentStatus = input("Please Enter Appointment Status: ")
 
     query = """
             INSERT INTO appointmentmngt(
@@ -245,11 +278,16 @@ def BookAppointment():
             )
             VALUES(%s,%s,%s,%s,%s)
 """
-    cursor.execute(query,(patientID,doctorID,appointmentDate,appointmentTime,appointmentStatus))
+    try:
+        cursor.execute(query,(patientID,doctorID,appointmentDate,appointmentTime,appointmentStatus))
+    except psycopg2.errors.UniqueViolation:
+        conn.rollback()
+        print("This doctor already has an appointment at this date and time.")
+        return
     conn.commit()
     print("Appointment Successfully Booked.")
-    conn.close()
     cursor.close()
+    conn.close()
 def ViewAppointmentByID():
     print("View Appointment By ID")
 def ViewAppointmentsByPatientID():
