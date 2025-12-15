@@ -303,14 +303,60 @@ def ViewAppointmentsByPatientID():
     cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
     patient = cursor.fetchall()
     while not patient:
-        patientID = input("Patient You Entered not Exist or invalid ID, please try again: ")
+        patientID = input("Patient ID You Entered not Exist or invalid, please try again: ")
         cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
         patient = cursor.fetchall()
     for idx, row in enumerate(patient,start=1):
         print(f"{idx}. ID: {row[0]}, PatientID: {row[1]}, DoctorID: {row[2]}, Date: {row[3]}, Time: {row[4]}, Status: {row[5]}")
 def ViewAppointmentsByDoctorID():
-    print("View Appointments By Doctor ID")
+    conn = get_connection()
+    cursor = conn.cursor()
+    doctorID = input("Please Enter Doctor ID: ")
+    cursor.execute("SELECT * FROM appointmentmngt WHERE doctor_id=%s",(doctorID,))
+    doctor = cursor.fetchall()
+    while not doctor:
+        doctorID = input("Doctor ID You Entered not Exist or invalid, please try again: ")
+        cursor.execute("SELECT * FROM appointmentmngt WHERE doctor_id=%s",(doctorID,))
+        doctor = cursor.fetchall()
+    for idx, row in enumerate(doctor,start=1):
+        print(f"{idx}. ID: {row[0]}, PatientID: {row[1]}, DoctorID: {row[2]}, Date: {row[3]}, Time: {row[4]}, Status: {row[5]}")
+
 def UpdateAppointment():
-    print("Update Appointment")
+    conn = get_connection()
+    cursor = conn.cursor()
+    patientID = input("Please Enter Patient ID: ")
+    cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
+    patient = cursor.fetchall()
+    while not patient:
+        patientID = input("Patient ID You Entered not Booked or invalid, please try again: ")
+        cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
+        patient = cursor.fetchall()
+    
+    while True:
+        appointmentDate = input("Please Enter Appointment Date 'YYYY-MM-DD': ")
+        try:
+            datetime.strptime(appointmentDate,"%Y-%m-%d")
+            break
+        except ValueError:
+            print("Invalid Date Format Use 'YYYY-MM-DD.' ")
+    while True:
+        appointmentTime = input("Please Enter Appointment Time: ")
+        try:
+            datetime.strptime(appointmentTime,"%H:%M")
+            break
+        except ValueError:
+            print("Invalid Time Format Use 'HH:MM'")
+    appointmentStatus = input("Please Enter Appointment Status: ")
+    
+    query = """
+            UPDATE appointmentmngt
+            SET appointment_date=%s, appointment_time=%s,appointment_status=%s
+            WHERE patient_id=%s
+"""
+    cursor.execute(query,(appointmentDate,appointmentTime,appointmentStatus,patientID))
+    conn.commit()
+    print("Appointment Sucessfully Updated.")
+    cursor.close()
+    conn.close()
 def CancelAppointment():
     print("Cancel Appointment") 

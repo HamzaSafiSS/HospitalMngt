@@ -101,7 +101,7 @@ def ManageAppointment():
     elif choice == 5:
         ViewAppointmentsByDoctorID()
     elif choice == 6:
-        UpdateAppointment()
+        UpdateAppointment()                           
     elif choice == 7:
         CancelAppointment()
     elif choice == 8:
