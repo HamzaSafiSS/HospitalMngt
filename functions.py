@@ -238,7 +238,13 @@ def DeleteDoctor():
     cursor.close()
 
 def ListAppointments():
-    print("List Appointments")
+    print("-----Appointments List-----")
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM appointmentmngt")
+    appointmentdata = cursor.fetchall()
+    for idx, row in enumerate(appointmentdata,start=1):
+        print(f"{idx}. AppointmentID: {row[0]}, PatientID: {row[1]}, DoctorID: {row[2]}, Appointment_Date: {row[3]}, Appointment_Time: {row[4]}, Status: {row[5]}")
 def BookAppointment():
     conn = get_connection()
     cursor = conn.cursor()
@@ -291,7 +297,17 @@ def BookAppointment():
 def ViewAppointmentByID():
     print("View Appointment By ID")
 def ViewAppointmentsByPatientID():
-    print("View Appointments By Patient ID")
+    conn = get_connection()
+    cursor = conn.cursor()
+    patientID = input("Please Enter Patient ID: ")
+    cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
+    patient = cursor.fetchall()
+    while not patient:
+        patientID = input("Patient You Entered not Exist or invalid ID, please try again: ")
+        cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
+        patient = cursor.fetchall()
+    for idx, row in enumerate(patient,start=1):
+        print(f"{idx}. ID: {row[0]}, PatientID: {row[1]}, DoctorID: {row[2]}, Date: {row[3]}, Time: {row[4]}, Status: {row[5]}")
 def ViewAppointmentsByDoctorID():
     print("View Appointments By Doctor ID")
 def UpdateAppointment():
