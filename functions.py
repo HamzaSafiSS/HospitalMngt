@@ -319,7 +319,7 @@ def ViewAppointmentsByDoctorID():
         cursor.execute("SELECT * FROM appointmentmngt WHERE doctor_id=%s",(doctorID,))
         doctor = cursor.fetchall()
     for idx, row in enumerate(doctor,start=1):
-        print(f"{idx}. ID: {row[0]}, PatientID: {row[1]}, DoctorID: {row[2]}, Date: {row[3]}, Time: {row[4]}, Status: {row[5]}")
+        print(f"{idx}. ID: {row[0]} | PatientID: {row[1]} | DoctorID: {row[2]} | Date: {row[3]} | Time: {row[4]} | Status: {row[5]}")
 
 def UpdateAppointment():
     conn = get_connection()
@@ -328,10 +328,14 @@ def UpdateAppointment():
     cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
     patient = cursor.fetchall()
     while not patient:
-        patientID = input("Patient ID You Entered not Booked or invalid, please try again: ")
+        patientID = input(f"Patient ID {patientID} does not exist. Please enter a valid ID.")
         cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
         patient = cursor.fetchall()
-    
+    for idx, row in enumerate(patient,start=1):
+        print("Choose the Appointment you want to Upate: ")
+        print(f"{idx}. appointmentID: {row[0]} | patientID: {row[1]} | DoctorID: {row[2]} | appointmentDate: {row[3]} | AppointmentTime: {row[4]} | AppointmentStatus: {row[5]}")
+    choice = int(input("Please select Appointment Number you want to update: ")) 
+    selectedAppID = patient[choice-1][0]
     while True:
         appointmentDate = input("Please Enter Appointment Date 'YYYY-MM-DD': ")
         try:
@@ -351,12 +355,30 @@ def UpdateAppointment():
     query = """
             UPDATE appointmentmngt
             SET appointment_date=%s, appointment_time=%s,appointment_status=%s
-            WHERE patient_id=%s
+            WHERE appointment_id=%s
 """
-    cursor.execute(query,(appointmentDate,appointmentTime,appointmentStatus,patientID))
+    cursor.execute(query,(appointmentDate,appointmentTime,appointmentStatus,selectedAppID))
     conn.commit()
     print("Appointment Sucessfully Updated.")
     cursor.close()
     conn.close()
-def CancelAppointment():
-    print("Cancel Appointment") 
+def CancelAppointment():   
+    conn = get_connection()
+    cursor = conn.cursor()
+    patientID = input("Please Enter Patient ID You Want to Delete: ")
+    cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
+    patient = cursor.fetchall()
+    while not patient:
+        patientID = input(f"Patient ID {patientID} does not exist. Please enter a valid ID.")
+        cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
+        patient = cursor.fetchall()
+    for idx, row in enumerate(patient,start=1):
+        print(f"{idx}. appointmentID: {row[0]} | patientID: {row[1]} | DoctorID: {row[2]} | appointmentDate: {row[3]} | AppointmentTime: {row[4]} | AppointmentStatus: {row[5]}")
+    choice = int(input("Please select Appointment Number you want to Delete: ")) 
+    selectedAppID = patient[choice-1][0]
+
+    cursor.execute("DELETE FROM appointmentmngt WHERE appointment_id = %s",(selectedAppID,))
+    conn.commit()
+    print("Appointment Sucessfully Deleted.")
+    cursor.close()
+    conn.close()
