@@ -5,17 +5,23 @@ from db import get_connection
 def ListPatient():
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM patientsdata") 
-    rows = cursor.fetchall()
-    if not rows:
-        print("Their are no Patients are added in the system Yet.")
-        return 
-    print("----List Of Patients-------")
-    for idx, row in enumerate(rows,start=1):
-        print(f"{idx}. ID: {row[0]}, Name: {row[1]}, Age: {row[2]}, gender: {row[3]}, Case{row[4]}")
-    cursor.close()
-    conn.close()
-
+    cursor.execute("SELECT * FROM patientsdata")
+    rows = cursor.fetchall()  
+    patients = []
+    for row in rows:  
+          patients.append(
+              {
+                "PatientID":row[0],
+                "PatientName":row[1],
+                "PatientAge":row[2],
+                "PatientGender":row[3],
+                "PatientCase":row[4],
+                "PatientPhone":row[5],
+                "PatientAddress":row[6]
+            }
+          )
+    return patients
+        
 def AddPatient():
 
     PatientId = input("Please enter patient ID Number: ")
@@ -68,11 +74,16 @@ def SearchByName():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM patientsdata WHERE patient_name = %s",(patientName,))
     rows = cursor.fetchall()
-    if not rows:
-        print(f"Patient with Name: {patientName} not Exist")
-        return
-    for idx,row in enumerate(rows,start=1):
-        print(f"ID: {row[0]}, Name: {row[1]}, Age: {row[2]}, gender: {row[3]}, Case: {row[4]},Phone: {row[5]},Address: {row[6]}")
+    for row in rows:
+        return {
+            "PatientID": row[0],
+            "PatientName": row[1],
+            "PatientAge:":row[2], 
+            "PatientGender":{row[3]},
+            "PatientCase": {row[4]},
+            "PatientPhone": {row[5]},
+            "PatientAddress": {row[6]}
+        }
 
 def UpdatePatient():
     patientID = input("Please enter the ID of the patient you want to edit: ")
@@ -129,7 +140,7 @@ def ListDoctors():
     cursor.execute("SELECT * FROM doctorsdata")
     doctordata = cursor.fetchall()
     if not doctordata:
-        print("There is No Doctor added in the System.")
+        return {"No Doctors Exist Here"}
     for idx, row in enumerate(doctordata,start=1):
         print(f"{idx}. ID: {row[0]}, Name: {row[1]}, Age: {row[2]}, Gender: {row[3]}, Speciality: {row[4]}")
     conn.close()
