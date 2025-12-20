@@ -134,57 +134,49 @@ def AddDoctor(doctortId,doctorName,doctorAge,doctorGender,doctorSpeciality):
     conn.close()
     return {"Message":"The Doctor Successfully Added."}
     
-def ViewDoctorById():
-    DoctorID = input("Please Enter the Doctor ID you want: ")
+def ViewDoctorById(doctorid):
     conn = get_connection()
     cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id = %s",(DoctorID,))
-    rows = cursor.fetchall()
-    if not rows:
-        print("Doctor with the provided ID not exists in the system")
-        return
-    print("-----The Doctor's Information-----")
-    for idx, row in enumerate(rows,start=1):
-        print(f"{idx}. ID: {row[0]}, Name: {row[1]}, Age: {row[2]}, Gender: {row[3]}, Speciality: {row[4]}")
-
+    cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id = %s",(doctorid,))
+    row = cursor.fetchone()
+    if not row:
+        return{"Message":"Doctor with the provided ID not exists in the system"}
     conn.close()
     cursor.close()
-def SearchDoctorByName():
-    doctorName = input("Please Enter the name of Doctor you want to Search.")
+    return {
+        "DoctorID": row[0],
+        "DoctorName": row[1],
+        "DoctorAge" : row[2],
+        "DoctorGender":row[3],
+        "DoctorSpeciality":row[4]
+    }
+
+def SearchDoctorByName(doctorname):
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM doctorsdata WHERE doctor_name =%s",(doctorName,))
-    doctorData = cursor.fetchall()
-    
-    for idx, row in enumerate(doctorData,start=1):
-        print(f"{idx}. ID: {row[0]}, Name: {row[1]}, Age: {row[2]}, Gender: {row[3]}, Speciality: {row[4]}")
-
+    cursor.execute("SELECT * FROM doctorsdata WHERE doctor_name =%s",(doctorname,))
+    row = cursor.fetchone()
+    if not row:
+        return {"Message":"Doctor with this ID not Exist."}
     conn.close()
     cursor.close()
-def UpdateDoctor():
+    return {
+        "DoctorID": row[0],
+        "DoctorName": row[1],
+        "DoctorAge" : row[2],
+        "DoctorGender":row[3],
+        "DoctorSpeciality":row[4]
+    }
+
+def UpdateDoctor(newDoctorName,newDoctorAge,newDoctorGender,newDoctorSpeciality,doctorID):
     conn = get_connection()
     cursor = conn.cursor()
 
-    doctorID = input("Please Enter the Doctor ID you want to Update: ")
     cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id=%s",(doctorID,))
     doctor = cursor.fetchone()
-    while not doctor:
-        doctorID = input("Please Enter Valid Doctor ID you want to Update.")
-        cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id=%s",(doctorID,))
-        doctor = cursor.fetchone()
-    newDoctorName = input("Please enter New Doctor Name: ")
-    while not newDoctorName.isalpha():
-        newDoctorName = input("Please enter Valid Doctor Name: ")
-    newDoctorAge = input("please enter Doctor Age: ")
-    while not newDoctorAge.isdigit() or not (20 <= int(newDoctorAge) <= 120):
-        newDoctorAge = input("please enter Valid Doctor Age:")
-    newDoctorGender = input("Please enter Doctor gender: ").lower()
-    while newDoctorGender != "male" and newDoctorGender != "female":
-        newDoctorGender = input("Please enter valid Doctor gender: ").lower()
-    newDoctorSpeciality = input("please enter Doctor Speciality: ")
-
-
+    if not doctor :
+        return {"Message":"Doctor with this ID not Exist"}
+    
     query = ("""
             UPDATE doctorsdata 
             SET doctor_name=%s,doctor_age=%s,doctor_gender=%s,doctor_speciality=%s
@@ -192,9 +184,10 @@ def UpdateDoctor():
 """)
     cursor.execute(query,(newDoctorName,newDoctorAge,newDoctorGender,newDoctorSpeciality,doctorID ))
     conn.commit()
-    print("Doctor Information Successfully Updated.")
     cursor.close()
     conn.close()
+    return {"Message":"Doctor Information Successfully Updated."}
+
 def DeleteDoctor():
     doctorID = input("Please Enter Doctor ID you want to Delete: ")
     conn = get_connection()
