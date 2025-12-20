@@ -188,29 +188,36 @@ def UpdateDoctor(newDoctorName,newDoctorAge,newDoctorGender,newDoctorSpeciality,
     conn.close()
     return {"Message":"Doctor Information Successfully Updated."}
 
-def DeleteDoctor():
-    doctorID = input("Please Enter Doctor ID you want to Delete: ")
+def DeleteDoctor(doctorid):
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id=%s",(doctorID,))
+    cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id=%s",(doctorid,))
     doctor = cursor.fetchone()
     if not doctor:
-        print(f"Doctor With {doctorID} ID not Exist.")
-        return
-    cursor.execute("DELETE FROM doctorsdata WHERE doctor_id=%s",(doctorID,))
+        return {"Message":"Doctor With entered ID not Exist."}
+    cursor.execute("DELETE FROM doctorsdata WHERE doctor_id=%s",(doctorid,))
     conn.commit()
-    print("Doctor Successfully Deleted.")
-    conn.close()
     cursor.close()
+    conn.close()
+    return{"Message":"Doctor Successfully Deleted."}
 
 def ListAppointments():
-    print("-----Appointments List-----")
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM appointmentmngt")
     appointmentdata = cursor.fetchall()
-    for idx, row in enumerate(appointmentdata,start=1):
-        print(f"{idx}. AppointmentID: {row[0]}, PatientID: {row[1]}, DoctorID: {row[2]}, Appointment_Date: {row[3]}, Appointment_Time: {row[4]}, Status: {row[5]}")
+    appointments = []
+    for row in appointmentdata:
+        appointments.append({
+        "AppointmentID": row[0],
+        "PatientID": row[1], 
+        "DoctorID": row[2], 
+        "Appointment_Date": row[3],
+        "Appointment_Time": row[4], 
+        "Status": row[5]
+        })
+    return appointments
+
 def BookAppointment():
     conn = get_connection()
     cursor = conn.cursor()

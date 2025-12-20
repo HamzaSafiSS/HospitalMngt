@@ -13,6 +13,8 @@ from functions import AddDoctor
 from functions import ViewDoctorById
 from functions import SearchDoctorByName
 from functions import UpdateDoctor
+from functions import DeleteDoctor
+from functions import ListAppointments
 app = FastAPI()
 
 @app.get("/")
@@ -83,7 +85,7 @@ def add_doctor(doctor:Doctor):
 def viw_by_id(doctorid: str):
     result = ViewDoctorById(doctorid)
     return result
-@app.get("/doctorslist/name/{doctorname}")
+@app.get("/doctorslist/name/{doctorname}") 
 def view_by_name(doctorname: str):
     result = SearchDoctorByName(doctorname)
     return result
@@ -91,4 +93,12 @@ def view_by_name(doctorname: str):
 @app.post("/updatedoctors")
 def update_doctor(doctor: Doctor):
     result = UpdateDoctor(doctor.Name,doctor.Age,doctor.Gender,doctor.Speciality,doctor.ID)
+    return result
+@app.delete("/deletedoctor/{doctorid}")
+def delete_doctor(doctorid: str):
+    result = DeleteDoctor(doctorid)
+    return result
+@app.get("/appointmentlist")
+def list_appointment():
+    result = ListAppointments()
     return result
