@@ -1,7 +1,10 @@
 import re
 import psycopg2
-from datetime import datetime
+from datetime import date,time
 from db import get_connection
+from schemas import AppointmentUpdate
+from fastapi import HTTPException
+from schemas import CancelAppointmentRequest
 def ListPatient():
     conn = get_connection()
     cursor = conn.cursor()
@@ -218,38 +221,18 @@ def ListAppointments():
         })
     return appointments
 
-def BookAppointment():
+def BookAppointment(patientid,doctorid,date,time,status):
     conn = get_connection()
     cursor = conn.cursor()
-    patientID = input("Please Enter Patient ID: ")
-    cursor.execute("SELECT * FROM patientsdata WHERE patient_id=%s",(patientID,))
-    patientid = cursor.fetchone()
-    while not patientid:
-        patientID = input("Please Enter a Valid Patient ID: ") 
-        cursor.execute("SELECT * FROM patientsdata WHERE patient_id=%s",(patientID,))
-        patientid = cursor.fetchone()
-    doctorID = input("Please Enter Doctor ID: ")
-    cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id=%s",(doctorID,))
-    doctorid = cursor.fetchone()
-    while not doctorid:
-        doctorID = input("Please Enter a Valid Doctor ID: ") 
-        cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id=%s",(doctorID,))
-        doctorid = cursor.fetchone()
-    while True:
-        appointmentDate = input("Please Enter Appointment Date 'YYYY-MM-DD': ")
-        try:
-            datetime.strptime(appointmentDate,"%Y-%m-%d")
-            break
-        except ValueError:
-            print("Invalid Date Format Use 'YYYY-MM-DD.' ")
-    while True:
-        appointmentTime = input("Please Enter Appointment Time: ")
-        try:
-            datetime.strptime(appointmentTime,"%H:%M")
-            break
-        except ValueError:
-            print("Invalid Time Format Use 'HH:MM'")
-    appointmentStatus = input("Please Enter Appointment Status: ")
+    cursor.execute("SELECT * FROM patientsdata WHERE patient_id=%s",(patientid,))
+    patient = cursor.fetchone()
+    if not patient:
+        return {"Message":"Patient with entered ID not Exist."}
+
+    cursor.execute("SELECT * FROM doctorsdata WHERE doctor_id=%s",(doctorid,))
+    doctor = cursor.fetchone()
+    if not doctor:
+        return {"Message":"Doctor with entered ID not Exist"} 
 
     query = """
             INSERT INTO appointmentmngt(
@@ -258,100 +241,155 @@ def BookAppointment():
             VALUES(%s,%s,%s,%s,%s)
 """
     try:
-        cursor.execute(query,(patientID,doctorID,appointmentDate,appointmentTime,appointmentStatus))
+        cursor.execute(query,(patientid,doctorid,date,time,status))
     except psycopg2.errors.UniqueViolation:
         conn.rollback()
-        print("This doctor already has an appointment at this date and time.")
-        return
+        return {"This doctor already has an appointment at this date and time."}
     conn.commit()
-    print("Appointment Successfully Booked.")
     cursor.close()
     conn.close()
+    return {"Appointment Successfully Booked."}
 def ViewAppointmentByID():
     print("View Appointment By ID")
-def ViewAppointmentsByPatientID():
+def ViewAppointmentsByPatientID(patientid):
     conn = get_connection()
     cursor = conn.cursor()
-    patientID = input("Please Enter Patient ID: ")
-    cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
-    patient = cursor.fetchall()
-    while not patient:
-        patientID = input("Patient ID You Entered not Exist or invalid, please try again: ")
-        cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
-        patient = cursor.fetchall()
-    for idx, row in enumerate(patient,start=1):
-        print(f"{idx}. ID: {row[0]}, PatientID: {row[1]}, DoctorID: {row[2]}, Date: {row[3]}, Time: {row[4]}, Status: {row[5]}")
-def ViewAppointmentsByDoctorID():
+    cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientid,))
+    rows = cursor.fetchall() 
+    cursor.close()
+    conn.close() 
+    patient = [] 
+    if not rows:
+        return {"Message":"Appointment with entered Patient ID not Exist."}  
+    for row in rows:
+        patient.append({
+                "ID": row[0], 
+                "PatientID": row[1],
+                "DoctorID": row[2],
+                "Date": row[3],
+                "Time": row[4],
+                "Status": row[5]
+        }) 
+    return rows
+def ViewAppointmentsByDoctorID(doctorid):
+    conn = get_connection() 
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM appointmentmngt WHERE doctor_id=%s",(doctorid,))
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    if not rows:
+        return {"Message":"Appointment with Entered Doctor ID not Exist."}
+    doctor = []
+    for row in rows:
+        doctor.append({
+            "ID": row[0], 
+            "PatientID": row[1],
+            "DoctorID": row[2],
+            "Date": row[3],
+            "Time": row[4],
+            "Status": row[5]
+        })
+    return doctor
+def UpdateAppointment(patientid, number, data: AppointmentUpdate):
     conn = get_connection()
     cursor = conn.cursor()
-    doctorID = input("Please Enter Doctor ID: ")
-    cursor.execute("SELECT * FROM appointmentmngt WHERE doctor_id=%s",(doctorID,))
-    doctor = cursor.fetchall()
-    while not doctor:
-        doctorID = input("Doctor ID You Entered not Exist or invalid, please try again: ")
-        cursor.execute("SELECT * FROM appointmentmngt WHERE doctor_id=%s",(doctorID,))
-        doctor = cursor.fetchall()
-    for idx, row in enumerate(doctor,start=1):
-        print(f"{idx}. ID: {row[0]} | PatientID: {row[1]} | DoctorID: {row[2]} | Date: {row[3]} | Time: {row[4]} | Status: {row[5]}")
 
-def UpdateAppointment():
+    cursor.execute(
+        "SELECT appointment_id FROM appointmentmngt WHERE patient_id=%s",
+        (patientid,)
+    )
+    appointments = cursor.fetchall()
+    if not appointments:
+        cursor.close()
+        conn.close()
+        raise HTTPException(
+            status_code=404,
+            detail="Patient with entered ID does not exist or has no Appointment."
+        )
+    if number < 1 or number > len(appointments):
+        cursor.close()
+        conn.close()
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid appointment number."
+        )
+    selectedAppID = appointments[number - 1][0]
+    cursor.execute(
+        """
+        SELECT appointment_id FROM appointmentmngt
+        WHERE patient_id = %s
+          AND appointment_date = %s
+          AND appointment_time = %s
+          AND appointment_id != %s
+        """,
+        (   patientid,
+            data.appointment_date,
+            data.appointment_time,
+            selectedAppID
+        )
+    )
+    duplicate = cursor.fetchone()
+    if duplicate:
+        cursor.close()
+        conn.close()
+        raise HTTPException(
+            status_code=400,
+            detail="This doctor already has an appointment at this date and time."
+        )
+    cursor.execute(
+        """
+        UPDATE appointmentmngt
+        SET appointment_date=%s,
+            appointment_time=%s,
+            appointment_status=%s
+        WHERE appointment_id=%s
+        """,
+        (
+            data.appointment_date,
+            data.appointment_time,
+            data.appointment_status,
+            selectedAppID,
+        )
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return {"Message": "Appointment Successfully Updated."}
+def CancelAppointment(request: CancelAppointmentRequest):   
     conn = get_connection()
     cursor = conn.cursor()
-    patientID = input("Please Enter Patient ID: ")
-    cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
-    patient = cursor.fetchall()
-    while not patient:
-        patientID = input(f"Patient ID {patientID} does not exist. Please enter a valid ID.")
-        cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
-        patient = cursor.fetchall()
-    for idx, row in enumerate(patient,start=1):
-        print("Choose the Appointment you want to Upate: ")
-        print(f"{idx}. appointmentID: {row[0]} | patientID: {row[1]} | DoctorID: {row[2]} | appointmentDate: {row[3]} | AppointmentTime: {row[4]} | AppointmentStatus: {row[5]}")
-    choice = int(input("Please select Appointment Number you want to update: ")) 
-    selectedAppID = patient[choice-1][0]
-    while True:
-        appointmentDate = input("Please Enter Appointment Date 'YYYY-MM-DD': ")
-        try:
-            datetime.strptime(appointmentDate,"%Y-%m-%d")
-            break
-        except ValueError:
-            print("Invalid Date Format Use 'YYYY-MM-DD.' ")
-    while True:
-        appointmentTime = input("Please Enter Appointment Time: ")
-        try:
-            datetime.strptime(appointmentTime,"%H:%M")
-            break
-        except ValueError:
-            print("Invalid Time Format Use 'HH:MM'")
-    appointmentStatus = input("Please Enter Appointment Status: ")
     
-    query = """
-            UPDATE appointmentmngt
-            SET appointment_date=%s, appointment_time=%s,appointment_status=%s
-            WHERE appointment_id=%s
-"""
-    cursor.execute(query,(appointmentDate,appointmentTime,appointmentStatus,selectedAppID))
+    cursor.execute(
+        "SELECT * FROM appointmentmngt WHERE patient_id=%s",
+        (request.patientID,)
+    )
+    patient_appointments = cursor.fetchall()
+    
+    if not patient_appointments:
+        cursor.close()
+        conn.close()
+        raise HTTPException(
+            status_code=404,
+            detail=f"Patient ID {request.patientID} does not exist or has no appointments."
+        )
+    
+    if request.appointmentNumber < 1 or request.appointmentNumber > len(patient_appointments):
+        cursor.close()
+        conn.close()
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid appointment number."
+        )
+    
+    selectedAppID = patient_appointments[request.appointmentNumber - 1][0]
+    
+    cursor.execute(
+        "DELETE FROM appointmentmngt WHERE appointment_id = %s",
+        (selectedAppID,)
+    )
     conn.commit()
-    print("Appointment Sucessfully Updated.")
     cursor.close()
     conn.close()
-def CancelAppointment():   
-    conn = get_connection()
-    cursor = conn.cursor()
-    patientID = input("Please Enter Patient ID You Want to Delete: ")
-    cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
-    patient = cursor.fetchall()
-    while not patient:
-        patientID = input(f"Patient ID {patientID} does not exist. Please enter a valid ID.")
-        cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s",(patientID,))
-        patient = cursor.fetchall()
-    for idx, row in enumerate(patient,start=1):
-        print(f"{idx}. appointmentID: {row[0]} | patientID: {row[1]} | DoctorID: {row[2]} | appointmentDate: {row[3]} | AppointmentTime: {row[4]} | AppointmentStatus: {row[5]}")
-    choice = int(input("Please select Appointment Number you want to Delete: ")) 
-    selectedAppID = patient[choice-1][0]
-
-    cursor.execute("DELETE FROM appointmentmngt WHERE appointment_id = %s",(selectedAppID,))
-    conn.commit()
-    print("Appointment Sucessfully Deleted.")
-    cursor.close()
-    conn.close()
+    
+    return {"Message": "Appointment Successfully Deleted."}

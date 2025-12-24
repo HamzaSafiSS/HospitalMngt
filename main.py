@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from typing import Annotated
+from datetime import date, time
 from functions import ListPatient
 from functions import AddPatient
 from functions import ListDoctors
@@ -15,6 +16,15 @@ from functions import SearchDoctorByName
 from functions import UpdateDoctor
 from functions import DeleteDoctor
 from functions import ListAppointments
+from functions import BookAppointment
+from functions import ViewAppointmentsByPatientID
+from functions import ViewAppointmentsByDoctorID
+from functions import UpdateAppointment
+from schemas import AppointmentUpdate
+from schemas import CancelAppointmentRequest
+from functions import CancelAppointment
+
+
 app = FastAPI()
 
 @app.get("/")
@@ -102,3 +112,38 @@ def delete_doctor(doctorid: str):
 def list_appointment():
     result = ListAppointments()
     return result
+
+class Appointment(BaseModel):
+    patientID:str
+    doctorID:str
+    date: date
+    time: time
+    status:str
+
+@app.post("/bookappointment")
+def book_appointment(appointment: Appointment):
+    result = BookAppointment(appointment.patientID,appointment.doctorID,appointment.date,appointment.time,appointment.status)
+    return result
+
+@app.get("/Appointment/patient/{patientid}")
+def app_by_patient_id(patientid: str):
+    result = ViewAppointmentsByPatientID(patientid)
+    return result
+
+@app.get("/Appointment/doctor/{doctorid}")
+def app_by_patient_id(doctorid:str):
+    result = ViewAppointmentsByDoctorID(doctorid)
+    return result
+
+
+@app.post("/updateappointment/{patientid}/{number}") 
+def update_appointment(
+    patientid: str,
+    number: int,
+    appointment: AppointmentUpdate
+):
+    return UpdateAppointment(patientid, number, appointment)
+
+@app.delete("/cancelAppointment")
+def deleteAppointment(Cappointment: CancelAppointmentRequest):
+    return CancelAppointment(Cappointment)
