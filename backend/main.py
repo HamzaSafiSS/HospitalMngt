@@ -2,6 +2,20 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from typing import Annotated
 from datetime import date, time
+from fastapi.middleware.cors import CORSMiddleware
+app = FastAPI(title="Hospital Management API")
+
+origins = [
+    "http://localhost:3000",  # your frontend URL
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,       # allow requests from this origin
+    allow_credentials=True,
+    allow_methods=["*"],         # allow GET, POST, PUT, DELETE
+    allow_headers=["*"],
+)
 
 # Import functions
 from functions import (
@@ -12,7 +26,7 @@ from functions import (
 )
 from backend.schemas import AppointmentUpdate, CancelAppointmentRequest
 
-app = FastAPI(title="Hospital Management API")
+
 
 # ----------------- Home -----------------
 @app.get("/")
