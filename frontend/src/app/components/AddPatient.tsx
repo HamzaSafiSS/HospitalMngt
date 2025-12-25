@@ -8,11 +8,12 @@ interface AddPatientProps {
 
 export function AddPatient({ onSuccess }: AddPatientProps) {
   const [formData, setFormData] = useState({
+    id: '',
     name: '',
     age: '',
     gender: '',
     phone: '',
-    email: '',
+    case: '',
     address: '',
   });
   const [loading, setLoading] = useState(false);
@@ -26,8 +27,8 @@ export function AddPatient({ onSuccess }: AddPatientProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name || !formData.age || !formData.gender || !formData.phone) {
+
+    if (!formData.id || !formData.name || !formData.age || !formData.gender || !formData.phone || !formData.case) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -39,7 +40,7 @@ export function AddPatient({ onSuccess }: AddPatientProps) {
         age: parseInt(formData.age),
       });
       toast.success('Patient added successfully');
-      setFormData({ name: '', age: '', gender: '', phone: '', email: '', address: '' });
+      setFormData({ id: '', name: '', age: '', gender: '', phone: '', case: '', address: '' });
       onSuccess();
     } catch (error: any) {
       toast.error(error.response?.data?.detail || 'Failed to add patient');
@@ -54,6 +55,18 @@ export function AddPatient({ onSuccess }: AddPatientProps) {
       <h2 className="text-2xl mb-6 text-gray-800">Add New Patient</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block mb-2 text-gray-700">Patient ID *</label>
+            <input
+              type="text"
+              name="id"
+              value={formData.id}
+              onChange={handleChange}
+              required
+              placeholder="e.g. P001"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
           <div>
             <label className="block mb-2 text-gray-700">Name *</label>
             <input
@@ -94,7 +107,7 @@ export function AddPatient({ onSuccess }: AddPatientProps) {
             </select>
           </div>
           <div>
-            <label className="block mb-2 text-gray-700">Phone *</label>
+            <label className="block mb-2 text-gray-700">Phone * (e.g. 0912345678)</label>
             <input
               type="tel"
               name="phone"
@@ -105,12 +118,13 @@ export function AddPatient({ onSuccess }: AddPatientProps) {
             />
           </div>
           <div>
-            <label className="block mb-2 text-gray-700">Email</label>
+            <label className="block mb-2 text-gray-700">Case/Diagnosis *</label>
             <input
-              type="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              name="case"
+              value={formData.case}
               onChange={handleChange}
+              required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>

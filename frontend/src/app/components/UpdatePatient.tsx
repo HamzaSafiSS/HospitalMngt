@@ -4,12 +4,12 @@ import { toast } from 'sonner';
 import { X } from 'lucide-react';
 
 interface Patient {
-  id: number;
+  id: string;
   name: string;
   age: number;
   gender: string;
   phone: string;
-  email?: string;
+  case: string;
   address?: string;
 }
 
@@ -25,7 +25,7 @@ export function UpdatePatient({ patient, onClose, onSuccess }: UpdatePatientProp
     age: '',
     gender: '',
     phone: '',
-    email: '',
+    case: '',
     address: '',
   });
   const [loading, setLoading] = useState(false);
@@ -37,7 +37,7 @@ export function UpdatePatient({ patient, onClose, onSuccess }: UpdatePatientProp
         age: patient.age.toString(),
         gender: patient.gender,
         phone: patient.phone,
-        email: patient.email || '',
+        case: patient.case || '',
         address: patient.address || '',
       });
     }
@@ -52,16 +52,17 @@ export function UpdatePatient({ patient, onClose, onSuccess }: UpdatePatientProp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!patient || !formData.name || !formData.age || !formData.gender || !formData.phone) {
+
+    if (!patient || !formData.name || !formData.age || !formData.gender || !formData.phone || !formData.case) {
       toast.error('Please fill in all required fields');
       return;
     }
 
     try {
       setLoading(true);
-      await patientAPI.update(patient.id, {
+      await patientAPI.update({
         ...formData,
+        id: patient.id,
         age: parseInt(formData.age),
       });
       toast.success('Patient updated successfully');
@@ -90,7 +91,7 @@ export function UpdatePatient({ patient, onClose, onSuccess }: UpdatePatientProp
               <X className="h-6 w-6 text-gray-600" />
             </button>
           </div>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -144,12 +145,13 @@ export function UpdatePatient({ patient, onClose, onSuccess }: UpdatePatientProp
                 />
               </div>
               <div>
-                <label className="block mb-2 text-gray-700">Email</label>
+                <label className="block mb-2 text-gray-700">Case/Diagnosis *</label>
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  name="case"
+                  value={formData.case}
                   onChange={handleChange}
+                  required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>

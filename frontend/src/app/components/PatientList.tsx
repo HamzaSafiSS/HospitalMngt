@@ -4,12 +4,11 @@ import { Trash2, Edit, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Patient {
-  id: number;
+  id: string;
   name: string;
   age: number;
   gender: string;
   phone: string;
-  email?: string;
   address?: string;
 }
 
@@ -54,9 +53,9 @@ export function PatientList({ onEdit }: PatientListProps) {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this patient?')) return;
-    
+
     try {
       await patientAPI.delete(id);
       toast.success('Patient deleted successfully');
@@ -110,7 +109,6 @@ export function PatientList({ onEdit }: PatientListProps) {
               <th className="px-6 py-3 text-left text-gray-700">Age</th>
               <th className="px-6 py-3 text-left text-gray-700">Gender</th>
               <th className="px-6 py-3 text-left text-gray-700">Phone</th>
-              <th className="px-6 py-3 text-left text-gray-700">Email</th>
               <th className="px-6 py-3 text-left text-gray-700">Actions</th>
             </tr>
           </thead>
@@ -129,7 +127,6 @@ export function PatientList({ onEdit }: PatientListProps) {
                   <td className="px-6 py-4 whitespace-nowrap text-gray-900">{patient.age}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-900">{patient.gender}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-900">{patient.phone}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">{patient.email || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap space-x-2">
                     <button
                       onClick={() => onEdit(patient)}

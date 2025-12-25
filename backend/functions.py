@@ -1,7 +1,7 @@
 import psycopg2
 from fastapi import HTTPException
-from backend.db import get_connection
-from backend.schemas import AppointmentUpdate, CancelAppointmentRequest
+from db import get_connection
+from schemas import AppointmentUpdate, CancelAppointmentRequest
 
 # ----------------- Patients -----------------
 def ListPatient():
@@ -12,13 +12,13 @@ def ListPatient():
         rows = cursor.fetchall()
         return [
             {
-                "PatientID": row[0],
-                "PatientName": row[1],
-                "PatientAge": row[2],
-                "PatientGender": row[3],
-                "PatientCase": row[4],
-                "PatientPhone": row[5],
-                "PatientAddress": row[6]
+                "id": row[0],
+                "name": row[1],
+                "age": row[2],
+                "gender": row[3],
+                "case": row[4],
+                "phone": row[5],
+                "address": row[6]
             } for row in rows
         ]
     except Exception as e:
@@ -60,13 +60,13 @@ def ViewById(patient_ID):
         if not row:
             raise HTTPException(status_code=404, detail="Patient not exist")
         return {
-            "PatientID": row[0],
-            "PatientName": row[1],
-            "PatientAge": row[2],
-            "PatientGender": row[3],
-            "PatientCase": row[4],
-            "PatientPhone": row[5],
-            "PatientAddress": row[6]
+            "id": row[0],
+            "name": row[1],
+            "age": row[2],
+            "gender": row[3],
+            "case": row[4],
+            "phone": row[5],
+            "address": row[6]
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -84,13 +84,13 @@ def SearchByName(patientName):
         if not row:
             raise HTTPException(status_code=404, detail="Patient not exist")
         return {
-            "PatientID": row[0],
-            "PatientName": row[1],
-            "PatientAge": row[2],
-            "PatientGender": row[3],
-            "PatientCase": row[4],
-            "PatientPhone": row[5],
-            "PatientAddress": row[6]
+            "id": row[0],
+            "name": row[1],
+            "age": row[2],
+            "gender": row[3],
+            "case": row[4],
+            "phone": row[5],
+            "address": row[6]
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -150,11 +150,11 @@ def ListDoctors():
         rows = cursor.fetchall()
         return [
             {
-                "DoctorID": row[0],
-                "DoctorName": row[1],
-                "DoctorAge": row[2],
-                "DoctorGender": row[3],
-                "DoctorSpeciality": row[4]
+                "id": row[0],
+                "name": row[1],
+                "age": row[2],
+                "gender": row[3],
+                "speciality": row[4]
             } for row in rows
         ]
     except Exception as e:
@@ -194,11 +194,33 @@ def ViewDoctorById(doctorid):
         if not row:
             raise HTTPException(status_code=404, detail="Doctor with the provided ID not exist")
         return {
-            "DoctorID": row[0],
-            "DoctorName": row[1],
-            "DoctorAge": row[2],
-            "DoctorGender": row[3],
-            "DoctorSpeciality": row[4]
+            "id": row[0],
+            "name": row[1],
+            "age": row[2],
+            "gender": row[3],
+            "speciality": row[4]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def SearchDoctorByName(doctorname):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM doctorsdata WHERE doctor_name = %s", (doctorname,))
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Doctor not exist")
+        return {
+            "id": row[0],
+            "name": row[1],
+            "age": row[2],
+            "gender": row[3],
+            "speciality": row[4]
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -255,12 +277,12 @@ def ListAppointments():
         rows = cursor.fetchall()
         return [
             {
-                "AppointmentID": row[0],
-                "PatientID": row[1],
-                "DoctorID": row[2],
-                "Appointment_Date": row[3],
-                "Appointment_Time": row[4],
-                "Status": row[5]
+                "id": row[0],
+                "patient_id": row[1],
+                "doctor_id": row[2],
+                "date": row[3],
+                "time": row[4],
+                "status": row[5]
             } for row in rows
         ]
     except Exception as e:
@@ -299,6 +321,29 @@ def BookAppointment(patientid, doctorid, date, time, status):
         conn.close()
 
 
+def ViewAppointmentByID(appointment_id):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM appointmentmngt WHERE appointment_id=%s", (appointment_id,))
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Appointment not exist")
+        return {
+            "id": row[0],
+            "patient_id": row[1],
+            "doctor_id": row[2],
+            "date": row[3],
+            "time": row[4],
+            "status": row[5]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
+
+
 def ViewAppointmentsByPatientID(patientid):
     try:
         conn = get_connection()
@@ -309,12 +354,12 @@ def ViewAppointmentsByPatientID(patientid):
             raise HTTPException(status_code=404, detail="Appointment with entered Patient ID not exist.")
         return [
             {
-                "ID": row[0],
-                "PatientID": row[1],
-                "DoctorID": row[2],
-                "Date": row[3],
-                "Time": row[4],
-                "Status": row[5]
+                "id": row[0],
+                "patient_id": row[1],
+                "doctor_id": row[2],
+                "date": row[3],
+                "time": row[4],
+                "status": row[5]
             } for row in rows
         ]
     except Exception as e:
@@ -334,12 +379,12 @@ def ViewAppointmentsByDoctorID(doctorid):
             raise HTTPException(status_code=404, detail="Appointment with entered Doctor ID not exist.")
         return [
             {
-                "ID": row[0],
-                "PatientID": row[1],
-                "DoctorID": row[2],
-                "Date": row[3],
-                "Time": row[4],
-                "Status": row[5]
+                "id": row[0],
+                "patient_id": row[1],
+                "doctor_id": row[2],
+                "date": row[3],
+                "time": row[4],
+                "status": row[5]
             } for row in rows
         ]
     except Exception as e:
@@ -371,7 +416,7 @@ def UpdateAppointment(patientid, number, data: AppointmentUpdate):
             AND appointment_time = %s
             AND appointment_id != %s
             """,
-            (selectedAppID, data.appointment_date, data.appointment_time, selectedAppID)
+            (selectedAppID, data.date, data.time, selectedAppID)
         )
         duplicate = cursor.fetchone()
         if duplicate:
@@ -383,7 +428,7 @@ def UpdateAppointment(patientid, number, data: AppointmentUpdate):
             SET appointment_date=%s, appointment_time=%s, appointment_status=%s
             WHERE appointment_id=%s
             """,
-            (data.appointment_date, data.appointment_time, data.appointment_status, selectedAppID)
+            (data.date, data.time, data.status, selectedAppID)
         )
         conn.commit()
         return {"Message": "Appointment Successfully Updated."}
@@ -399,17 +444,75 @@ def CancelAppointment(request: CancelAppointmentRequest):
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s", (request.patientID,))
+        cursor.execute("SELECT * FROM appointmentmngt WHERE patient_id=%s", (request.patient_id,))
         patient_appointments = cursor.fetchall()
         if not patient_appointments:
-            raise HTTPException(status_code=404, detail=f"Patient ID {request.patientID} does not exist or has no appointments.")
-        if request.appointmentNumber < 1 or request.appointmentNumber > len(patient_appointments):
+            raise HTTPException(status_code=404, detail=f"Patient ID {request.patient_id} does not exist or has no appointments.")
+        if request.appointment_number < 1 or request.appointment_number > len(patient_appointments):
             raise HTTPException(status_code=400, detail="Invalid appointment number.")
 
-        selectedAppID = patient_appointments[request.appointmentNumber - 1][0]
+        selectedAppID = patient_appointments[request.appointment_number - 1][0]
         cursor.execute("DELETE FROM appointmentmngt WHERE appointment_id=%s", (selectedAppID,))
         conn.commit()
         return {"Message": "Appointment Successfully Deleted."}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
+def DeleteAppointmentByID(appointment_id: int):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM appointmentmngt WHERE appointment_id=%s", (appointment_id,))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail="Appointment not exist")
+        cursor.execute("DELETE FROM appointmentmngt WHERE appointment_id=%s", (appointment_id,))
+        conn.commit()
+        return {"Message": "Appointment Successfully Deleted"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def UpdateAppointmentByID(appointment_id: int, data: AppointmentUpdate):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Check if exists
+        cursor.execute("SELECT * FROM appointmentmngt WHERE appointment_id=%s", (appointment_id,))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail="Appointment not exist")
+
+        # Check for duplicate for SAME doctor (not including this appointment)
+        cursor.execute(
+            """
+            SELECT appointment_id FROM appointmentmngt
+            WHERE doctor_id = (SELECT doctor_id FROM appointmentmngt WHERE appointment_id=%s)
+            AND appointment_date = %s
+            AND appointment_time = %s
+            AND appointment_id != %s
+            """,
+            (appointment_id, data.date, data.time, appointment_id)
+        )
+        if cursor.fetchone():
+            raise HTTPException(status_code=400, detail="This doctor already has an appointment at this date and time.")
+
+        cursor.execute(
+            """
+            UPDATE appointmentmngt
+            SET appointment_date=%s, appointment_time=%s, appointment_status=%s
+            WHERE appointment_id=%s
+            """,
+            (data.date, data.time, data.status, appointment_id)
+        )
+        conn.commit()
+        return {"Message": "Appointment Successfully Updated"}
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))

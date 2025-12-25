@@ -13,7 +13,6 @@ export function BookAppointment({ onSuccess }: BookAppointmentProps) {
     date: '',
     time: '',
     status: 'scheduled',
-    reason: '',
   });
   const [loading, setLoading] = useState(false);
   const [patients, setPatients] = useState<any[]>([]);
@@ -44,7 +43,7 @@ export function BookAppointment({ onSuccess }: BookAppointmentProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.patient_id || !formData.doctor_id || !formData.date || !formData.time) {
       toast.error('Please fill in all required fields');
       return;
@@ -54,11 +53,9 @@ export function BookAppointment({ onSuccess }: BookAppointmentProps) {
       setLoading(true);
       await appointmentAPI.create({
         ...formData,
-        patient_id: parseInt(formData.patient_id),
-        doctor_id: parseInt(formData.doctor_id),
       });
       toast.success('Appointment booked successfully');
-      setFormData({ patient_id: '', doctor_id: '', date: '', time: '', status: 'scheduled', reason: '' });
+      setFormData({ patient_id: '', doctor_id: '', date: '', time: '', status: 'scheduled' });
       onSuccess();
     } catch (error: any) {
       toast.error(error.response?.data?.detail || 'Failed to book appointment');
@@ -102,7 +99,7 @@ export function BookAppointment({ onSuccess }: BookAppointmentProps) {
               <option value="">Select Doctor</option>
               {doctors.map((doctor) => (
                 <option key={doctor.id} value={doctor.id}>
-                  {doctor.name} - {doctor.specialization} (ID: {doctor.id})
+                  {doctor.name} - {doctor.speciality} (ID: {doctor.id})
                 </option>
               ))}
             </select>
@@ -141,17 +138,6 @@ export function BookAppointment({ onSuccess }: BookAppointmentProps) {
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
-          </div>
-          <div className="md:col-span-2">
-            <label className="block mb-2 text-gray-700">Reason for Visit</label>
-            <textarea
-              name="reason"
-              value={formData.reason}
-              onChange={handleChange}
-              rows={3}
-              placeholder="e.g., Regular checkup, Follow-up visit"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
           </div>
         </div>
         <div className="flex justify-end">

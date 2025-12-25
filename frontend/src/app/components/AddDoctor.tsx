@@ -8,11 +8,11 @@ interface AddDoctorProps {
 
 export function AddDoctor({ onSuccess }: AddDoctorProps) {
   const [formData, setFormData] = useState({
+    id: '',
     name: '',
-    specialization: '',
-    phone: '',
-    email: '',
-    experience: '',
+    age: '',
+    gender: '',
+    speciality: '',
   });
   const [loading, setLoading] = useState(false);
 
@@ -25,8 +25,8 @@ export function AddDoctor({ onSuccess }: AddDoctorProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name || !formData.specialization || !formData.phone) {
+
+    if (!formData.id || !formData.name || !formData.age || !formData.gender || !formData.speciality) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -35,10 +35,10 @@ export function AddDoctor({ onSuccess }: AddDoctorProps) {
       setLoading(true);
       await doctorAPI.create({
         ...formData,
-        experience: formData.experience ? parseInt(formData.experience) : undefined,
+        age: parseInt(formData.age),
       });
       toast.success('Doctor added successfully');
-      setFormData({ name: '', specialization: '', phone: '', email: '', experience: '' });
+      setFormData({ id: '', name: '', age: '', gender: '', speciality: '' });
       onSuccess();
     } catch (error: any) {
       toast.error(error.response?.data?.detail || 'Failed to add doctor');
@@ -54,6 +54,18 @@ export function AddDoctor({ onSuccess }: AddDoctorProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
+            <label className="block mb-2 text-gray-700">Doctor ID *</label>
+            <input
+              type="text"
+              name="id"
+              value={formData.id}
+              onChange={handleChange}
+              required
+              placeholder="e.g. D001"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
             <label className="block mb-2 text-gray-700">Name *</label>
             <input
               type="text"
@@ -65,47 +77,42 @@ export function AddDoctor({ onSuccess }: AddDoctorProps) {
             />
           </div>
           <div>
-            <label className="block mb-2 text-gray-700">Specialization *</label>
+            <label className="block mb-2 text-gray-700">Age *</label>
+            <input
+              type="number"
+              name="age"
+              value={formData.age}
+              onChange={handleChange}
+              required
+              min="25"
+              max="150"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block mb-2 text-gray-700">Gender *</label>
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="block mb-2 text-gray-700">Speciality *</label>
             <input
               type="text"
-              name="specialization"
-              value={formData.specialization}
+              name="speciality"
+              value={formData.speciality}
               onChange={handleChange}
               required
               placeholder="e.g., Cardiologist, Pediatrician"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block mb-2 text-gray-700">Phone *</label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block mb-2 text-gray-700">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block mb-2 text-gray-700">Experience (years)</label>
-            <input
-              type="number"
-              name="experience"
-              value={formData.experience}
-              onChange={handleChange}
-              min="0"
-              max="60"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>

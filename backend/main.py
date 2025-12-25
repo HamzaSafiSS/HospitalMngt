@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="Hospital Management API")
 
 origins = [
-    "http://localhost:3000",  # your frontend URL
+    "http://localhost:5173",  # your frontend URL
 ]
 
 app.add_middleware(
@@ -22,9 +22,9 @@ from functions import (
     ListPatient, AddPatient, ViewById, SearchByName, UpdatePatient, DeletePatient,
     ListDoctors, AddDoctor, ViewDoctorById, SearchDoctorByName, UpdateDoctor, DeleteDoctor,
     ListAppointments, BookAppointment, ViewAppointmentsByPatientID, ViewAppointmentsByDoctorID,
-    UpdateAppointment, CancelAppointment
+    UpdateAppointment, CancelAppointment, DeleteAppointmentByID, UpdateAppointmentByID
 )
-from backend.schemas import AppointmentUpdate, CancelAppointmentRequest
+from schemas import AppointmentUpdate, CancelAppointmentRequest
 
 
 
@@ -39,29 +39,29 @@ def get_patients():
     return ListPatient()
 
 class Patient(BaseModel):
-    ID: str
-    Name: Annotated[str, Field(pattern="^[A-Za-z]+$")]      # only letters
-    Age: Annotated[int, Field(ge=0, le=300)]               # 0-300
-    Gender: Annotated[str, Field(pattern="^(male|female)$")]
-    Case: str
+    id: str
+    name: Annotated[str, Field(pattern="^[A-Za-z ]+$")]      # only letters and spaces
+    age: Annotated[int, Field(ge=0, le=300)]
+    gender: Annotated[str, Field(pattern="^(Male|Female|Other)$")]
+    case: str
     phone: Annotated[str, Field(pattern=r"^(09\d{8}|\+2519\d{8})$")]
-    Address: str
+    address: str
 
 @app.post("/patients")
 def add_patient(patient: Patient):
-    return AddPatient(patient.ID, patient.Name, patient.Age, patient.Gender, patient.Case, patient.phone, patient.Address)
+    return AddPatient(patient.id, patient.name, patient.age, patient.gender, patient.case, patient.phone, patient.address)
+
+@app.get("/patients/search")
+def search_patients(name: str):
+    return SearchByName(name)
 
 @app.get("/patients/{patientID}")
 def get_by_patient_id(patientID: str):
     return ViewById(patientID)
 
-@app.get("/patients/{patientname}")
-def get_by_patient_name(patientname: str):
-    return SearchByName(patientname)
-
 @app.put("/patients")
 def update_patient(patient: Patient):
-    return UpdatePatient(patient.Name, patient.Age, patient.Gender, patient.Case, patient.phone, patient.Address, patient.ID)
+    return UpdatePatient(patient.name, patient.age, patient.gender, patient.case, patient.phone, patient.address, patient.id)
 
 @app.delete("/patients/{patientid}")
 def delete_patient(patientid: str):
@@ -73,27 +73,27 @@ def list_doctors():
     return ListDoctors()
 
 class Doctor(BaseModel):
-    ID: str
-    Name: Annotated[str, Field(pattern="^[A-Za-z]+$")]
-    Age: Annotated[int, Field(ge=25, le=300)]
-    Gender: Annotated[str, Field(pattern="^(male|female)$")]
-    Speciality: str
+    id: str
+    name: Annotated[str, Field(pattern="^[A-Za-z ]+$")]
+    age: Annotated[int, Field(ge=25, le=300)]
+    gender: Annotated[str, Field(pattern="^(Male|Female|Other)$")]
+    speciality: str
 
 @app.post("/doctors")
 def add_doctor(doctor: Doctor):
-    return AddDoctor(doctor.ID, doctor.Name, doctor.Age, doctor.Gender, doctor.Speciality)
+    return AddDoctor(doctor.id, doctor.name, doctor.age, doctor.gender, doctor.speciality)
+
+@app.get("/doctors/search")
+def search_doctors(name: str):
+    return SearchDoctorByName(name)
 
 @app.get("/doctors/{doctorid}")
 def view_doctor_by_id(doctorid: str):
     return ViewDoctorById(doctorid)
 
-@app.get("/doctors/{doctorname}")
-def view_doctor_by_name(doctorname: str):
-    return SearchDoctorByName(doctorname)
-
 @app.put("/doctors")
 def update_doctor(doctor: Doctor):
-    return UpdateDoctor(doctor.Name, doctor.Age, doctor.Gender, doctor.Speciality, doctor.ID)
+    return UpdateDoctor(doctor.name, doctor.age, doctor.gender, doctor.speciality, doctor.id)
 
 @app.delete("/doctors/{doctorid}")
 def delete_doctor(doctorid: str):
@@ -105,27 +105,39 @@ def list_appointments():
     return ListAppointments()
 
 class Appointment(BaseModel):
-    patientID: str
-    doctorID: str
+    patient_id: str
+    doctor_id: str
     date: date
     time: time
     status: str
 
 @app.post("/appointments")
 def book_appointment(appointment: Appointment):
-    return BookAppointment(appointment.patientID, appointment.doctorID, appointment.date, appointment.time, appointment.status)
+    return BookAppointment(appointment.patient_id, appointment.doctor_id, appointment.date, appointment.time, appointment.status)
 
-@app.get("/appointments/{patientid}")
+@app.get("/appointments/patient/{patientid}")
 def appointment_by_patient_id(patientid: str):
     return ViewAppointmentsByPatientID(patientid)
 
-@app.get("/appointments/{doctorid}")
+@app.get("/appointments/doctor/{doctorid}")
 def appointment_by_doctor_id(doctorid: str):
     return ViewAppointmentsByDoctorID(doctorid)
+
+@app.get("/appointments/{appointmentid}")
+def appointment_by_id(appointmentid: int):
+    return ViewAppointmentByID(appointmentid)
+
+@app.put("/appointments/{appointmentid}")
+def update_appointment_by_id(appointmentid: int, appointment: AppointmentUpdate):
+    return UpdateAppointmentByID(appointmentid, appointment)
 
 @app.put("/appointments/{patientid}/{number}")
 def update_appointment(patientid: str, number: int, appointment: AppointmentUpdate):
     return UpdateAppointment(patientid, number, appointment)
+
+@app.delete("/appointments/{appointmentid}")
+def delete_appointment(appointmentid: int):
+    return DeleteAppointmentByID(appointmentid)
 
 @app.delete("/appointments")
 def cancel_appointment(request: CancelAppointmentRequest):

@@ -5,12 +5,11 @@ import { X } from 'lucide-react';
 
 interface Appointment {
   id: number;
-  patient_id: number;
-  doctor_id: number;
+  patient_id: string;
+  doctor_id: string;
   date: string;
   time: string;
   status: string;
-  reason?: string;
 }
 
 interface UpdateAppointmentProps {
@@ -26,7 +25,6 @@ export function UpdateAppointment({ appointment, onClose, onSuccess }: UpdateApp
     date: '',
     time: '',
     status: '',
-    reason: '',
   });
   const [loading, setLoading] = useState(false);
   const [patients, setPatients] = useState<any[]>([]);
@@ -51,12 +49,11 @@ export function UpdateAppointment({ appointment, onClose, onSuccess }: UpdateApp
   useEffect(() => {
     if (appointment) {
       setFormData({
-        patient_id: appointment.patient_id.toString(),
-        doctor_id: appointment.doctor_id.toString(),
+        patient_id: appointment.patient_id,
+        doctor_id: appointment.doctor_id,
         date: appointment.date,
         time: appointment.time,
         status: appointment.status,
-        reason: appointment.reason || '',
       });
     }
   }, [appointment]);
@@ -70,7 +67,7 @@ export function UpdateAppointment({ appointment, onClose, onSuccess }: UpdateApp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!appointment || !formData.patient_id || !formData.doctor_id || !formData.date || !formData.time) {
       toast.error('Please fill in all required fields');
       return;
@@ -80,8 +77,6 @@ export function UpdateAppointment({ appointment, onClose, onSuccess }: UpdateApp
       setLoading(true);
       await appointmentAPI.update(appointment.id, {
         ...formData,
-        patient_id: parseInt(formData.patient_id),
-        doctor_id: parseInt(formData.doctor_id),
       });
       toast.success('Appointment updated successfully');
       onSuccess();
@@ -109,7 +104,7 @@ export function UpdateAppointment({ appointment, onClose, onSuccess }: UpdateApp
               <X className="h-6 w-6 text-gray-600" />
             </button>
           </div>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -141,7 +136,7 @@ export function UpdateAppointment({ appointment, onClose, onSuccess }: UpdateApp
                   <option value="">Select Doctor</option>
                   {doctors.map((doctor) => (
                     <option key={doctor.id} value={doctor.id}>
-                      {doctor.name} - {doctor.specialization} (ID: {doctor.id})
+                      {doctor.name} - {doctor.speciality} (ID: {doctor.id})
                     </option>
                   ))}
                 </select>
@@ -180,16 +175,6 @@ export function UpdateAppointment({ appointment, onClose, onSuccess }: UpdateApp
                   <option value="completed">Completed</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
-              </div>
-              <div className="md:col-span-2">
-                <label className="block mb-2 text-gray-700">Reason for Visit</label>
-                <textarea
-                  name="reason"
-                  value={formData.reason}
-                  onChange={handleChange}
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
               </div>
             </div>
             <div className="flex justify-end gap-2">

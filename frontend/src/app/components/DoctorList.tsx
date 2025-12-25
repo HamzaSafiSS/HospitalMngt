@@ -4,12 +4,11 @@ import { Trash2, Edit, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Doctor {
-  id: number;
+  id: string;
   name: string;
-  specialization: string;
-  phone: string;
-  email?: string;
-  experience?: number;
+  age: number;
+  gender: string;
+  speciality: string;
 }
 
 interface DoctorListProps {
@@ -53,9 +52,9 @@ export function DoctorList({ onEdit }: DoctorListProps) {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this doctor?')) return;
-    
+
     try {
       await doctorAPI.delete(id);
       toast.success('Doctor deleted successfully');
@@ -106,10 +105,9 @@ export function DoctorList({ onEdit }: DoctorListProps) {
             <tr>
               <th className="px-6 py-3 text-left text-gray-700">ID</th>
               <th className="px-6 py-3 text-left text-gray-700">Name</th>
-              <th className="px-6 py-3 text-left text-gray-700">Specialization</th>
-              <th className="px-6 py-3 text-left text-gray-700">Phone</th>
-              <th className="px-6 py-3 text-left text-gray-700">Email</th>
-              <th className="px-6 py-3 text-left text-gray-700">Experience</th>
+              <th className="px-6 py-3 text-left text-gray-700">Age</th>
+              <th className="px-6 py-3 text-left text-gray-700">Gender</th>
+              <th className="px-6 py-3 text-left text-gray-700">Speciality</th>
               <th className="px-6 py-3 text-left text-gray-700">Actions</th>
             </tr>
           </thead>
@@ -125,12 +123,9 @@ export function DoctorList({ onEdit }: DoctorListProps) {
                 <tr key={doctor.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-gray-900">{doctor.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-900">{doctor.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">{doctor.specialization}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">{doctor.phone}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">{doctor.email || '-'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">
-                    {doctor.experience ? `${doctor.experience} years` : '-'}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">{doctor.age}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">{doctor.gender}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">{doctor.speciality}</td>
                   <td className="px-6 py-4 whitespace-nowrap space-x-2">
                     <button
                       onClick={() => onEdit(doctor)}

@@ -5,14 +5,11 @@ import { toast } from 'sonner';
 
 interface Appointment {
   id: number;
-  patient_id: number;
-  patient_name?: string;
-  doctor_id: number;
-  doctor_name?: string;
+  patient_id: string;
+  doctor_id: string;
   date: string;
   time: string;
   status: string;
-  reason?: string;
 }
 
 interface AppointmentListProps {
@@ -39,7 +36,7 @@ export function AppointmentList({ onEdit }: AppointmentListProps) {
 
   const handleCancel = async (id: number) => {
     if (!confirm('Are you sure you want to cancel this appointment?')) return;
-    
+
     try {
       await appointmentAPI.cancel(id);
       toast.success('Appointment cancelled successfully');
@@ -87,12 +84,11 @@ export function AppointmentList({ onEdit }: AppointmentListProps) {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-gray-700">ID</th>
-              <th className="px-6 py-3 text-left text-gray-700">Patient</th>
-              <th className="px-6 py-3 text-left text-gray-700">Doctor</th>
+              <th className="px-6 py-3 text-left text-gray-700">Patient ID</th>
+              <th className="px-6 py-3 text-left text-gray-700">Doctor ID</th>
               <th className="px-6 py-3 text-left text-gray-700">Date</th>
               <th className="px-6 py-3 text-left text-gray-700">Time</th>
               <th className="px-6 py-3 text-left text-gray-700">Status</th>
-              <th className="px-6 py-3 text-left text-gray-700">Reason</th>
               <th className="px-6 py-3 text-left text-gray-700">Actions</th>
             </tr>
           </thead>
@@ -107,12 +103,8 @@ export function AppointmentList({ onEdit }: AppointmentListProps) {
               appointments.map((appointment) => (
                 <tr key={appointment.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-gray-900">{appointment.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">
-                    {appointment.patient_name || `ID: ${appointment.patient_id}`}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">
-                    {appointment.doctor_name || `ID: ${appointment.doctor_id}`}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">{appointment.patient_id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-900">{appointment.doctor_id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-900">{appointment.date}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-900">{appointment.time}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -120,7 +112,6 @@ export function AppointmentList({ onEdit }: AppointmentListProps) {
                       {appointment.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-900">{appointment.reason || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap space-x-2">
                     <button
                       onClick={() => onEdit(appointment)}
