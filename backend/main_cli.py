@@ -1,4 +1,4 @@
-from db import get_connection
+from backend.db import get_connection
 from functions import ListPatient
 from functions import AddPatient
 from functions import ViewById
