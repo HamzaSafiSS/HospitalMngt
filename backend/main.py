@@ -46,7 +46,7 @@ class Patient(BaseModel):
     case: str
     phone: Annotated[str, Field(pattern=r"^(09\d{8}|\+2519\d{8})$")]
     address: str
-
+    
 @app.post("/patients")
 def add_patient(patient: Patient):
     return AddPatient(patient.id, patient.name, patient.age, patient.gender, patient.case, patient.phone, patient.address)
@@ -142,3 +142,6 @@ def delete_appointment(appointmentid: int):
 @app.delete("/appointments")
 def cancel_appointment(request: CancelAppointmentRequest):
     return CancelAppointment(request)
+@app.get("/test")
+def test():
+    return {"status": "ok"}
